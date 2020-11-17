@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - dm_postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=telekom
+      - POSTGRES_USER=ainura
+      - POSTGRES_PASSWORD=ainura123
+  web:
+    build: backend/.
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/backend
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+  vue:
+    container_name: vue-kg
+    build:
+      context: fr/.
+      dockerfile: Dockerfile
+
+    volumes:
+      - .:/fr
+    ports:
+      - 8080:8080
+    depends_on:
+      - web
+volumes:
+  dm_postgres_data:
