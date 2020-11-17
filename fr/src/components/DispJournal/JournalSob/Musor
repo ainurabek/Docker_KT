@@ -1,0 +1,1657 @@
+<template>
+  <!-- <v-toolbar-title color="black" class="ml-6">
+        <v-row>
+          <v-col cols="12" sm="6" md="4">
+            Информация
+          </v-col>
+          <v-col cols="12" sm="6" md="2"> </v-col>
+          <v-col cols="12" sm="6" md="6">
+            <v-pagination
+              v-model="page"
+              :length="lengthDataList"
+              circle
+            ></v-pagination>
+          </v-col>
+        </v-row>
+      </v-toolbar-title> -->
+  <v-data-table
+    :headers="headers"
+    :items="detailList"
+    :search="search"
+    sort-by="calories"
+    class="elevation-1" 
+  >
+    <template v-slot:top>
+      <v-toolbar flat color="white">
+        <v-toolbar-title></v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-divider class="mx-4" inset vertical></v-divider>
+        <v-text-field
+          v-model="search"
+          append-icon="search"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
+        <v-spacer></v-spacer>
+        <v-btn color="green" dark class="mb-2" @click="createJourn"
+          >Создать событие</v-btn
+        >
+        <v-dialog v-model="dialog2" max-width="650px">
+           <v-card class="mx-auto backCard1 pl-4 pr-4 pt-2" color="blue" dark>
+          <v-row>
+            <v-col cols="12" sm="6" md="4">
+              <v-autocomplete
+                label="Вид журнала"
+                v-model="editedItem2.type_journal"
+                :items="type_journal"
+                item-value="id"
+                item-text="name"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="4">
+              <v-datetime-picker
+                label="Начало"
+                v-model="datetime"
+              ></v-datetime-picker>
+              <!-- <div>Datetime value: <span>{{datetime}}</span></div> --> </v-col
+            ><v-col cols="12" sm="6" md="4">
+              <v-datetime-picker
+                label="Конец"
+                v-model="datetime2"
+              ></v-datetime-picker>
+              <!-- <div>Datetime value: <span>{{datetime2}}</span></div> -->
+            </v-col>
+            <v-col cols="12" sm="6" md="4">
+              <v-autocomplete
+                label="Ответственный"
+                v-model="editedItem2.responsible_outfit"
+                :items="outfit"
+                item-value="id"
+                item-text="outfit"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="4">
+              <v-autocomplete
+                label="Передал(предприятие)"
+                v-model="editedItem2.send_from"
+                :items="outfit"
+                item-value="id"
+                item-text="outfit"
+              >
+              </v-autocomplete> </v-col
+            ><v-col cols="12" sm="6" md="4">
+              <v-text-field
+                label="ФИО передал"
+                v-model="editedItem2.contact_name"
+              >
+              </v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="4">
+              <v-autocomplete
+                label="Причина"
+                v-model="editedItem2.reason"
+                :items="reason"
+                item-value="id"
+                item-text="name"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="4">
+              <v-autocomplete
+                label="Индекс-1"
+                v-model="editedItem2.index1"
+                :items="index"
+                item-value="id"
+                item-text="name"
+              >
+              </v-autocomplete> </v-col
+            >
+            <v-col cols="12" sm="6" md="4">
+              <v-text-field label="Примечание" v-model="editedItem2.comments">
+              </v-text-field>
+            </v-col>
+          </v-row>
+           <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="white" text @click="close2">Отмена</v-btn>
+              <v-btn color="white" text @click="saveJourn">Сохранить</v-btn>
+            </v-card-actions>
+        </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="dialog" max-width="650px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">Редактировать</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-autocomplete
+                      v-model="editedItem.type_journal"
+                      :items="type_journal"
+                      item-text="name"
+                      item-value="id"
+                      dense
+                      filled
+                      label="Вид журнала"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.contact_name"
+                      dense
+                      filled
+                      label="ФИО передающего"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-autocomplete
+                      v-model="editedItem.reason"
+                      :items="reason"
+                      item-text="name"
+                      item-value="id"
+                      dense
+                      filled
+                      label="Причина"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-autocomplete
+                      v-model="editedItem.index1"
+                      :items="index"
+                      item-text="name"
+                      item-value="id"
+                      dense
+                      filled
+                      label="Индекс-1"
+                    ></v-autocomplete>
+                  </v-col>
+                  
+                  <v-col cols="12" sm="6" md="4">
+                    <v-autocomplete
+                      v-model="editedItem.responsible_outfit"
+                      :items="outfit"
+                      item-text="outfit"
+                      item-value="id"
+                      dense
+                      filled
+                      label="Ответственный"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-autocomplete
+                      v-model="editedItem.send_from"
+                      :items="outfit"
+                      item-text="outfit"
+                      item-value="id"
+                      dense
+                      filled
+                      label="Передал"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" sm="6" md="4">
+                    <v-text-field
+                      v-model="editedItem.comments"
+                      dense
+                      filled
+                      label="Комментарий"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="close">Отмена</v-btn>
+              <v-btn color="blue darken-1" text @click="save">Сохранить</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-toolbar>
+    </template>
+    <template v-slot:[`item.actions`]="{ item }">
+      <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+      <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+    </template>
+    <template v-slot:[`item.created_by`]="{ item }">
+      <span
+        >{{ item.created_by.first_name }}
+        {{ item.created_by.last_name }}
+        {{ item.created_by.middle_name }}
+      </span>
+    </template>
+    <template v-slot:no-data>
+      <v-btn color="primary" @click="initialize">Обновить</v-btn>
+    </template>
+  </v-data-table>
+  <!-- <v-row dense>
+    <v-col sm="6" md="12" cols="12">
+      <v-card class="mx-auto backCard1" color="white" >
+        <v-card-text dense>
+          <v-row dense>
+            <v-col cols="12" sm="6" md="6">
+              <v-text-field
+                label="Начало, дата и время"
+                type="datetime-local"
+                v-model="datetime"
+                outlined
+                dense
+                min="1990-06-01T08:30"
+                max="2099-06-30T16:30"
+                class="fontSizeText"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="6">
+              <v-text-field
+                label="Конец, дата и время"
+                type="datetime-local"
+                v-model="datetime2"
+                name="date2"
+                outlined
+                dense
+                min="1990-06-01T08:30"
+                max="2099-06-30T16:30"
+                class="fontSizeText"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="2">
+              <v-autocomplete
+                label="Вид журнала"
+                v-model="editedItem.type_journal"
+                :items="type_journal"
+                item-value="id"
+                item-text="name"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                label="Индекс-1"
+                v-model="editedItem.index1"
+                :items="index"
+                item-value="id"
+                item-text="name"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                label="Ответственный"
+                v-model="editedItem.responsible_outfit"
+                :items="outfit"
+                item-value="id"
+                item-text="outfit"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                label="Передал(предприятие)"
+                v-model="send_fromG"
+                :items="outfit"
+                item-value="id"
+                item-text="outfit"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete> </v-col
+            ><v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                label="ФИО передал"
+                v-model="editedItem.contact_name"
+                :items="usersOutfit"
+                item-value="id"
+                item-text="name"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                label="Причина"
+                v-model="editedItem.reason"
+                :items="reason"
+                item-value="id"
+                item-text="name"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                item-text="point"
+                item-value="id"
+                :items="ip"
+                label="ИП от"
+                v-model="editedItem.point1"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-autocomplete
+                item-text="point"
+                item-value="id"
+                :items="ip"
+                label="ИП до"
+                v-model="editedItem.point2"
+                dense
+                class="fontSizeText"
+              >
+              </v-autocomplete>
+            </v-col>
+            <v-col cols="12" sm="6" md="12">
+              <v-combobox
+                label="Примечание 1"
+                v-model="editedItem.comments1"
+                :items="comments"
+                item-text="name"
+                item-value="name"
+                :return-object="false"
+                dense
+                class="fontSizeText"
+              >
+              </v-combobox>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn @click="editItem" color="secondary" dark class="ml-4 mb-4"
+            >Редактировать</v-btn
+          >
+          <v-btn @click="createJourn" color="green" dark class="ml-4 mb-4"
+            >Второй звонок</v-btn
+          >
+          <v-btn @click="deleteItem" color="red" dark class="ml-4 mb-4"
+            >Удалить событие</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-col>
+
+    <v-col v-for="(item, i) in items" :key="i" cols="12">
+      <v-card :color="item.color" dark>
+        <div class="d-flex flex-no-wrap justify-space-between">
+          <div>
+            <v-card-subtitle v-text="item.artist"></v-card-subtitle>
+          </div>
+
+          <v-avatar class="ma-3" size="125" tile>
+            <v-img :src="item.src"></v-img>
+          </v-avatar>
+        </div>
+      </v-card>
+    </v-col>
+  </v-row> -->
+
+  <!--  <v-card class="mx-auto backCard1 pl-4 pr-4 pt-2" color="white" >
+          <v-card-title>
+            <span class="headline"></span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                
+                <v-col cols="12" sm="6" md="6">
+                  <v-text-field
+                    label="Начало, дата и время"
+                    type="datetime-local"
+                    v-model="datetime"
+                    outlined
+                    dense
+                    min="1990-06-01T08:30"
+                    max="2099-06-30T16:30"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="6">
+                  <v-text-field
+                    label="Конец, дата и время"
+                    type="datetime-local"
+                    v-model="datetime2"
+                    name="date2"
+                    outlined
+                    dense
+                    min="1990-06-01T08:30"
+                    max="2099-06-30T16:30"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Вид журнала"
+                    v-model="editedItem.type_journal"
+                    :items="type_journal"
+                    item-value="id"
+                    item-text="name"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Ответственный"
+                    v-model="editedItem.responsible_outfit"
+                    :items="outfit"
+                    item-value="id"
+                    item-text="outfit"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Передал(предприятие)"
+                    v-model="send_fromG"
+                    :items="outfit"
+                    item-value="id"
+                    item-text="outfit"
+                    dense
+                  >
+                  </v-autocomplete> </v-col
+                ><v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="ФИО передал"
+                    v-model="editedItem.contact_name"
+                    :items="usersOutfit"
+                    item-value="id"
+                    item-text="name"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Причина"
+                    v-model="editedItem.reason"
+                    :items="reason"
+                    item-value="id"
+                    item-text="name"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Индекс-1"
+                    v-model="editedItem.index1"
+                    :items="index"
+                    item-value="id"
+                    item-text="name"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-combobox
+                    label="Примечание 1"
+                    v-model="editedItem.comments1"
+                    :items="comments"
+                    item-text="name"
+                    item-value="name"
+                    :return-object="false"
+                    dense
+                  >
+                  </v-combobox>
+                </v-col>
+
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    item-text="point"
+                    item-value="id"
+                    :items="ip"
+                    label="ИП от"
+                    v-model="editedItem.point1"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    item-text="point"
+                    item-value="id"
+                    :items="ip"
+                    label="ИП до"
+                    v-model="editedItem.point2"
+                    dense
+                  >
+                  </v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn @click="editItem" color="secondary" dark class="ml-4 mb-4"
+        >Редактировать</v-btn
+      >
+      <v-btn @click="createJourn" color="green" dark class="ml-4 mb-4"
+        >Второй звонок</v-btn
+      >
+      <v-btn @click="deleteItem" color="red" dark class="ml-4 mb-4"
+        >Удалить событие</v-btn
+      >
+          </v-card-actions>
+        </v-card> -->
+  <!-- <v-card color="white" class="mx-auto editpoback mt-4 mb-4">
+        <v-card-text>
+          <div>
+            <v-row>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz">Начало:</span>
+                <span class="fontheader">{{ detailListObj.date_from2 }}</span>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Конец:</span>
+                <span class="fontheader">{{ detailListObj.date_to2 }}</span>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Индекс 1:</span>
+
+                <span class="fontheader">{{ detailListObj.index11 }}</span>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Передал:</span>
+                <span class="fontheader">{{ detailListObj.send_from1 }}</span>
+              </v-col>
+            </v-row>
+            <hr class="hrline" />
+            <v-row>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> ФИО передающего:</span>
+                <span class="fontheader">{{
+                  detailListObj.contact_name1
+                }}</span>
+              </v-col>
+              
+
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Ответственный:</span>
+
+                <span class="fontheader">
+                  {{ detailListObj.responsible_outfit1 }}</span
+                >
+              </v-col>
+              
+              <v-col cols="12" sm="6" md="2">
+                <span class="fontsiz"> ИП от:</span>
+                <span class="fontheader">{{ detailListObj.point11 }}</span>
+              </v-col>
+              <v-col cols="12" sm="6" md="2">
+                <span class="fontsiz"> Ип до:</span>
+                <span class="fontheader">{{ detailListObj.point22 }}</span>
+              </v-col>
+
+              <v-col cols="12" sm="6" md="2">
+                <span class="fontsiz"> Тип журнала:</span>
+
+                <span class="fontheader">
+                  {{ detailListObj.type_journal1 }}</span
+                >
+              </v-col>
+            </v-row>
+            <hr class="hrline" />
+            <v-row>
+              
+              
+              
+              <v-col cols="12" sm="6" md="4">
+                <span class="fontsiz"> Примечание 1:</span>
+
+                <span class="fontheader"> {{ detailListObj.comments1 }}</span>
+              </v-col>
+               <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Диспетчер:</span>
+                <span class="fontheader">{{ detailListObj.created_by1 }} </span>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <span class="fontsiz"> Причина:</span>
+                <span class="fontheader">{{ detailListObj.reason1 }} </span>
+              </v-col>
+            </v-row> -->
+  <!-- <hr class="hrline" />
+            <v-row>
+             
+            </v-row> -->
+  <!-- </div>
+        </v-card-text>
+      </v-card> -->
+
+  <!-- <v-btn @click="editItem" color="primary" dark class="ml-4"
+        >Редактировать</v-btn
+      >
+      <v-btn @click="createJourn" color="green" dark class="ml-4"
+        >Второй звонок</v-btn
+      >
+      <v-btn @click="deleteItem" color="red" dark class="ml-4"
+        >Удалить событие</v-btn
+      > -->
+
+  <!-- <v-dialog v-model="dialogEdit" persistent max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline"></span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                
+                <v-col cols="12" sm="6" md="6">
+                  <v-text-field
+                    label="Начало, дата и время"
+                    type="datetime-local"
+                    v-model="datetime"
+                    outlined
+                    dense
+                    min="1990-06-01T08:30"
+                    max="2099-06-30T16:30"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="6">
+                  <v-text-field
+                    label="Конец, дата и время"
+                    type="datetime-local"
+                    v-model="datetime2"
+                    name="date2"
+                    outlined
+                    dense
+                    min="1990-06-01T08:30"
+                    max="2099-06-30T16:30"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Вид журнала"
+                    v-model="editedItem.type_journal"
+                    :items="type_journal"
+                    item-value="id"
+                    item-text="name"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Ответственный"
+                    v-model="editedItem.responsible_outfit"
+                    :items="outfit"
+                    item-value="id"
+                    item-text="outfit"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Передал(предприятие)"
+                    v-model="send_fromG"
+                    :items="outfit"
+                    item-value="id"
+                    item-text="outfit"
+                  >
+                  </v-autocomplete> </v-col
+                ><v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="ФИО передал"
+                    v-model="editedItem.contact_name"
+                    :items="usersOutfit"
+                    item-value="id"
+                    item-text="name"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Причина"
+                    v-model="editedItem.reason"
+                    :items="reason"
+                    item-value="id"
+                    item-text="name"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    label="Индекс-1"
+                    v-model="editedItem.index1"
+                    :items="index"
+                    item-value="id"
+                    item-text="name"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-combobox
+                    label="Примечание 1"
+                    v-model="editedItem.comments1"
+                    :items="comments"
+                    item-text="name"
+                    item-value="name"
+                    :return-object="false"
+                  >
+                  </v-combobox>
+                </v-col>
+
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    item-text="point"
+                    item-value="id"
+                    :items="ip"
+                    label="ИП от"
+                    v-model="editedItem.point1"
+                  >
+                  </v-autocomplete>
+                </v-col>
+                <v-col cols="12" sm="6" md="4">
+                  <v-autocomplete
+                    item-text="point"
+                    item-value="id"
+                    :items="ip"
+                    label="ИП до"
+                    v-model="editedItem.point2"
+                  >
+                  </v-autocomplete>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="closeEdit">Отмена</v-btn>
+            <v-btn color="blue darken-1" text @click="saveJourn"
+              >Сохранить</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog> -->
+</template>
+
+<script>
+import { bus } from "../../../main";
+// import router from "../../../router";
+export default {
+  props: {
+    propsIdJourn: null,
+    propsSelJourn: null,
+  },
+  data: () => ({
+    search: "",
+    dialog: false,
+    page: 1,
+    dialog2: false,
+    dialogEdit: false,
+    loading: true,
+    errored: false,
+     headers: [
+        { align: 'left', sortable: false,text: 'Начало', value: 'created_at2', width: "1%" },
+        { align: 'left', sortable: false,text: "Конец", value: "date_from2",width: "1%" },
+        { align: 'left', sortable: false,text: "Индекс 1", value: "index1.index",width: "1%" },
+        { align: 'left', sortable: false,text: "Причина", value: "reason.name",width: "1%" },
+        { align: 'left', sortable: false,text: "Ответственный", value: "responsible_outfit.outfit", width: "1%" },
+        { align: 'left', sortable: false,text: "Передал", value: "send_from.outfit", width: "1%" },
+        { align: 'left', sortable: false,text: "ФИО передающего", value: "contact_name.name", width: "1%" },
+        { align: 'left', sortable: false,text: "Комментарий", value: "comments.name", width: "1%" },
+        { align: 'left', sortable: false,text: "Участок", value: "point1", width: "1%" },
+        { align: 'left', sortable: false,text:"Диспетчер", value: "created_by", width: "1%" },
+        { align: 'left', sortable: false,text: "Редактировать/Удалить", value: "actions", width: "1%" },
+      ],
+    //  headers: [
+      // {
+      //   text: "",
+      //   align: "start",
+      //   sortable: false,
+      //   value: "",
+      // },
+    //   { text: "Начало", value: "created_at2", },
+    //   { text: "Конец", value: "date_from2",  },
+    //   { text: "Индекс 1", value: "index1.index", },
+    //   { text: "Причина", value: "reason.name", },
+    //   { text: "Ответственный", value: "responsible_outfit.outfit", },
+    //   { text: "Передал", value: "send_from.outfit", },
+    //   { text: "ФИО передающего", value: "contact_name.name",  },
+    //   { text: "Комментарий", value: "comments.name",},
+    //   { text: "Участок", value: "point1", },
+    //   { text: "Диспетчер", value: "created_by", },
+    //   { text: "Редактировать/Удалить", value: "actions", sortable: false,},
+    // ],
+    detailList: [],
+    detailListObj: "",
+    outfit: [],
+    usersOutfit: [],
+    comments: [],
+    ip: [],
+    send_fromG: "",
+    flag: "",
+    lengthDataList: 0,
+    pageNumber: 1,
+    index: [
+      {
+        id: 1,
+        name: "01",
+      },
+      {
+        id: 2,
+        name: "0а",
+      },
+      {
+        id: 3,
+        name: "0д",
+      },
+      {
+        id: 4,
+        name: "0з",
+      },
+      {
+        id: 5,
+        name: "0тв",
+      },
+      {
+        id: 6,
+        name: "1",
+      },
+      {
+        id: 7,
+        name: "2",
+      },
+      {
+        id: 8,
+        name: "2-1",
+      },
+      {
+        id: 9,
+        name: "2-5",
+      },
+      {
+        id: 10,
+        name: "2-8",
+      },
+      {
+        id: 11,
+        name: "4",
+      },
+      {
+        id: 12,
+        name: "4-5",
+      },
+      {
+        id: 13,
+        name: "4-7",
+      },
+    ],
+    reason: [
+      {
+        id: 1,
+        name: "Линейные повреждения",
+      },
+      {
+        id: 2,
+        name: "Рилейные повреждения",
+      },
+    ],
+    type_journal: [
+      {
+        id: 1,
+        name: "По системам",
+      },
+      {
+        id: 2,
+        name: "Аренда",
+      },
+      {
+        id: 3,
+        name: "ГТС",
+      },
+      {
+        id: 4,
+        name: "ТВ и РВ",
+      },
+      {
+        id: 5,
+        name: "Телефонограммы",
+      },
+      {
+        id: 6,
+        name: "Стихия",
+      },
+      {
+        id: 7,
+        name: "Прочее",
+      },
+      {
+        id: 8,
+        name: "Автоматика",
+      },
+      {
+        id: 9,
+        name: "Телеграф",
+      },
+      {
+        id: 10,
+        name: "Ручные каналы",
+      },
+      {
+        id: 11,
+        name: "СПД",
+      },
+    ],
+    datetime: null,
+    datetime2: null,
+    editedItemDate1: null,
+    editedItemDate2: null,
+    idSendFromG: "",
+    editedItem2: {
+      type_journal: "",
+      responsible_outfit: "",
+      send_from: "",
+      contact_name: "",
+      reason: "",
+      index1: "",
+
+      comments1: "",
+
+      point1: "",
+      point2: "",
+    },
+    clearItem: {
+      type_journal: "",
+      responsible_outfit: "",
+      send_from: "",
+      contact_name: "",
+      reason: "",
+      index1: "",
+
+      comments1: "",
+
+      point1: "",
+      point2: "",
+    },
+    editedIndex: -1,
+    editedItem: {
+      type_journal: "",
+      responsible_outfit: "",
+      send_from: "",
+      contact_name: "",
+      reason: "",
+      index1: "",
+
+      comments1: "",
+
+      point1: "",
+      point2: "",
+    },
+    defaultItem: {
+      type_journal: "",
+      responsible_outfit: "",
+      send_from: "",
+      contact_name: "",
+      reason: "",
+      index1: "",
+
+      comments1: "",
+
+      point1: "",
+      point2: "",
+    },
+    url: {
+      baseUrl: "http://0.0.0.0:8000",
+      urlIP: "/apps/dispatching/api/event/ips/create",
+      urlObj: "/apps/dispatching/api/event/objects/create",
+      urlCirc: "/apps/dispatching/api/event/circuits/create",
+      urlUnc: "/apps/dispatching/api/event/unknown/create/",
+    },
+  }),
+
+  computed: {},
+
+  watch: {
+    page(newValue) {
+      this.detailListObj = this.detailList[newValue - 1];
+      console.log(this.detailListObj);
+    },
+    send_fromG(newValue) {
+      if (newValue != "") {
+        this.editedItem.send_from = newValue;
+        this.editedItem2.send_from = newValue;
+        this.sendFormGet();
+      }
+    },
+    datetime(newValue) {
+      if (newValue != null) {
+        let str = new Date(newValue).toISOString();
+        this.editedItemDate1 = str;
+      } else if (newValue == null) {
+        this.editedItemDate1 = null;
+      }
+      console.log(this.editedItemDate1);
+    },
+    datetime2(newValue) {
+      if (newValue != null) {
+        let str = new Date(newValue).toISOString();
+        this.editedItemDate2 = str;
+        // if (str == "1970-01-01T00:00:00.000Z") {
+        //   this.editedItemDate2 = null;
+        // }
+      } else if (newValue == null) {
+        this.editedItemDate2 = null;
+      }
+      console.log(newValue);
+    },
+    propsIdJourn() {
+      this.initialize();
+    },
+  },
+
+  created() {
+    this.initialize();
+    this.getOutfit();
+    this.pointGet();
+    this.commentsList();
+  },
+
+  methods: {
+    commentsList() {
+      this.$http
+        .get(`${this.url.baseUrl}/apps/dispatching/comment/`, {
+          headers: { Authorization: `Token ${localStorage.token}` },
+        })
+        .then((response) => {
+          this.comments = response.data;
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+    },
+    sendFormGet() {
+      if (this.send_fromG.id != null) {
+        this.idSendFromG = this.send_fromG.id;
+      } else {
+        this.idSendFromG = this.send_fromG;
+      }
+      this.$http
+        .get(
+          `${this.url.baseUrl}/apps/dispatching/api/outfit_worker/${this.idSendFromG}/`,
+          {
+            headers: { Authorization: `Token ${localStorage.token}` },
+          }
+        )
+        .then((response) => {
+          this.usersOutfit = response.data;
+
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+    },
+    pointGet() {
+      this.$http
+        .get(`${this.url.baseUrl}/apps/opu/objects/point/`, {
+          headers: { Authorization: `Token ${localStorage.token}` },
+        })
+        .then((response) => {
+          this.ip = response.data;
+          console.log(this.ip);
+        })
+        .catch((error) => {
+          console.log(error);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+    },
+    editItem() {
+      this.datetime = this.detailListObj.date_from;
+      this.datetime2 = this.detailListObj.date_to;
+      this.send_fromG = this.detailListObj.send_from;
+      this.editedItem = Object.assign({}, this.detailListObj);
+      this.flagEditCreate = 2;
+      this.dialogEdit = true;
+      console.log(this.editedItem);
+    },
+    closeEdit() {
+      this.dialogEdit = false;
+      this.$nextTick(() => {
+        this.datetime2 = null;
+        this.datetime = null;
+        this.send_fromG = "";
+        this.editedItem = Object.assign({}, this.defaultItem);
+      });
+    },
+    editSave() {
+      let id = this.detailListObj.id;
+      if (this.editedItem.type_journal == undefined) {
+        this.editedItem.type_journal = "";
+      } else if (this.editedItem.type_journal.id != undefined) {
+        this.editedItem.type_journal = this.editedItem.type_journal.id;
+      }
+      if (this.editedItem.contact_name.id != undefined) {
+        this.editedItem.contact_name = this.editedItem.contact_name.id;
+      }
+      if (this.editedItem.point1.id != undefined) {
+        this.editedItem.point1 = this.editedItem.point1.id;
+      }
+      if (this.editedItem.point2.id != undefined) {
+        this.editedItem.point2 = this.editedItem.point2.id;
+      }
+      if (this.editedItem.reason.id != undefined) {
+        this.editedItem.reason = this.editedItem.reason.id;
+      }
+      if (this.editedItem.responsible_outfit.id != undefined) {
+        this.editedItem.responsible_outfit = this.editedItem.responsible_outfit.id;
+      }
+      if (this.editedItem.send_from.id != undefined) {
+        this.editedItem.send_from = this.editedItem.send_from.id;
+      }
+      if (this.editedItem.index1.id != undefined) {
+        this.editedItem.index1 = this.editedItem.index1.id;
+      }
+
+      console.log(
+        "type_journal",
+        this.editedItem.type_journal,
+        "reason",
+        this.editedItem.reason,
+        "date_from",
+        this.editedItemDate1,
+        "date_to",
+        this.editedItemDate2,
+        "index1",
+        this.editedItem.index1,
+
+        "responsible_outfit",
+        this.editedItem.responsible_outfit,
+        "send_from",
+        this.editedItem.send_from,
+        "point1",
+        this.editedItem.point1,
+        "point2",
+        this.editedItem.point2,
+        "contact_name",
+        this.editedItem.contact_name,
+        "comments1",
+        this.editedItem.comments1
+      );
+      this.$http
+        .put(
+          `${this.url.baseUrl}/apps/dispatching/api/event/edit/${id}/`,
+          {
+            type_journal: this.editedItem.type_journal,
+            reason: this.editedItem.reason,
+            date_from: this.editedItemDate1,
+            date_to: this.editedItemDate2,
+            index1: this.editedItem.index1,
+
+            responsible_outfit: this.editedItem.responsible_outfit,
+            send_from: this.editedItem.send_from,
+            point1: this.editedItem.point1,
+            point2: this.editedItem.point2,
+            contact_name: this.editedItem.contact_name,
+            comments1: this.editedItem.comments1,
+          },
+          {
+            headers: {
+              Authorization: `Token ${localStorage.token}`,
+            },
+          }
+        )
+        .then((response) => {
+          if (response.status == 200) {
+            this.initialize();
+          }
+          console.log(response.status);
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+      this.closeEdit();
+    },
+    consss() {
+      if (this.datetime != null) {
+        let tzoffset = this.datetime.getTimezoneOffset() * 60000;
+        var localISOTime = new Date(Date.now() - tzoffset)
+          .toISOString()
+          .slice(0, -1);
+        this.editedItemDate1 = localISOTime;
+      }
+      console.log(localISOTime);
+    },
+    saveJourn() {
+      if (this.flagEditCreate == 1) {
+        if (this.propsSelJourn.object != null) {
+          const id = this.propsSelJourn.object.id;
+          this.saveFunc(id, this.url.urlObj);
+        } else if (this.propsSelJourn.circuit != null) {
+          const id = this.propsSelJourn.circuit.id;
+          this.saveFunc(id, this.url.urlCirc);
+        } else if (this.propsSelJourn.ips != null) {
+          const id = this.propsSelJourn.ips.id;
+          this.saveFunc(id, this.url.urlIP);
+        } else if (this.propsSelJourn.name != null) {
+          alert("Вы пытаетесь создать второй звонок для 'Другого'");
+        }
+      } else if (this.flagEditCreate == 2) {
+        this.editSave();
+      }
+    },
+    saveFunc(idArg, urlFunc) {
+      if (this.editedItem.type_journal != null) {
+        this.editedItem.type_journal = this.editedItem.type_journal.id;
+      }
+      if (this.editedItem.contact_name != null) {
+        this.editedItem.contact_name = this.editedItem.contact_name.id;
+      }
+      if (this.editedItem.point1 != null) {
+        this.editedItem.point1 = this.editedItem.point1.id;
+      }
+      if (this.editedItem.point2 != null) {
+        this.editedItem.point2 = this.editedItem.point2.id;
+      }
+      if (this.editedItem.reason != null) {
+        this.editedItem.reason = this.editedItem.reason.id;
+      }
+      if (this.editedItem.responsible_outfit != null) {
+        this.editedItem.responsible_outfit = this.editedItem.responsible_outfit.id;
+      }
+      if (this.editedItem.send_from != null) {
+        this.editedItem.send_from = this.editedItem.send_from.id;
+      }
+      if (this.editedItem.index1 != null) {
+        this.editedItem.index1 = this.editedItem.index1.id;
+      }
+
+      console.log(
+        "type_journal",
+        this.editedItem.type_journal,
+        "reason",
+        this.editedItem.reason,
+        "date_from",
+        this.editedItemDate1,
+        "date_to",
+        this.editedItemDate2,
+        "index1",
+        this.editedItem.index1,
+
+        "responsible_outfit",
+        this.editedItem.responsible_outfit,
+        "send_from",
+        this.editedItem.send_from,
+        "point1",
+        this.editedItem.point1,
+        "point2",
+        this.editedItem.point2,
+        "contact_name",
+        this.editedItem.contact_name,
+        "comments1",
+        this.editedItem.comments1
+      );
+      this.$http
+        .post(
+          `${this.url.baseUrl}${urlFunc}/${idArg}/`,
+          {
+            type_journal: this.editedItem.type_journal,
+            reason: this.editedItem.reason,
+            date_from: this.editedItemDate1,
+            date_to: this.editedItemDate2,
+            index1: this.editedItem.index1,
+
+            responsible_outfit: this.editedItem.responsible_outfit,
+            send_from: this.editedItem.send_from,
+            point1: this.editedItem.point1,
+            point2: this.editedItem.point2,
+            contact_name: this.editedItem.contact_name,
+            comments1: this.editedItem.comments1,
+          },
+          {
+            headers: {
+              Authorization: `Token ${localStorage.token}`,
+            },
+          }
+        )
+        .then((response) => {
+          this.initialize();
+          console.log(response.status);
+        })
+        .catch((error) => {
+          console.log(error);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+      this.closeEdit();
+    },
+    getEmitUpdate() {
+      bus.$emit("deleteUpdateJourn");
+    },
+    getOutfit() {
+      this.$http
+        .get(`${this.url.baseUrl}/apps/opu/objects/outfit/`, {
+          headers: { Authorization: `Token ${localStorage.token}` },
+        })
+        .then((response) => {
+          this.outfit = response.data;
+          console.log(this.outfit);
+        })
+        .catch((error) => {
+          console.log(error);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+    },
+    createJourn() {
+      this.datetime = this.detailListObj.date_from2;
+      this.datetime2 = this.detailListObj.date_to2;
+      this.send_fromG = this.detailListObj.send_from;
+      this.editedItem = Object.assign({}, this.detailListObj);
+
+      this.flagEditCreate = 1;
+      this.dialogEdit = true;
+      // if (this.detailListObj.date_from != null) {
+      //   let tzoffset = this.detailListObj.date_from
+      //   new Date.getTimezoneOffset() * 60000;
+      // var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, -1);
+      // this.editedItemDate1 = localISOTime
+      //   console.log(tzoffset)
+      // }
+      // console.log(tzoffset)
+      console.log(this.editedItem);
+    },
+    dateTrans() {
+      for (let i = 0; i < this.detailList.length; i++) {
+        if (this.detailList[i].created_at != null) {
+          let created_at2 = this.detailList[i].created_at.substring(0, 16);
+          let pushArray = {
+            created_at2: created_at2,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].date_from != null) {
+          let date_from2 =
+            this.detailList[i].date_from.substring(0, 10) +
+            " " +
+            this.detailList[i].date_from.substring(11, 16);
+          let pushArray = {
+            date_from2: date_from2,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].date_to != null) {
+          let date_to2 =
+            this.detailList[i].date_to.substring(0, 10) +
+            " " +
+            this.detailList[i].date_to.substring(11, 16);
+          let pushArray = {
+            date_to2: date_to2,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].index1 != null) {
+          let index11 = this.detailList[i].index1.index;
+          let pushArray = {
+            index11: index11,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].responsible_outfit != null) {
+          let responsible_outfit1 = this.detailList[i].responsible_outfit
+            .outfit;
+          let pushArray = {
+            responsible_outfit1: responsible_outfit1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].contact_name != null) {
+          let contact_name1 = this.detailList[i].contact_name.name;
+          let pushArray = {
+            contact_name1: contact_name1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].send_from != null) {
+          let send_from1 = this.detailList[i].send_from.outfit;
+          let pushArray = {
+            send_from1: send_from1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].type_journal != null) {
+          let type_journal1 = this.detailList[i].type_journal.name;
+          let pushArray = {
+            type_journal1: type_journal1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].point1 != null) {
+          let point1 = this.detailList[i].point1.point;
+          let pushArray = {
+            point11: point1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].point2 != null) {
+          let point2 = this.detailList[i].point2.point;
+          let pushArray = {
+            point22: point2,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].reason != null) {
+          let reason1 = this.detailList[i].reason.name;
+          let pushArray = {
+            reason1: reason1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        if (this.detailList[i].created_by != null) {
+          let created_by1 =
+            this.detailList[i].created_by.first_name +
+            " " +
+            this.detailList[i].created_by.last_name;
+          let pushArray = {
+            created_by1: created_by1,
+          };
+          Object.assign(this.detailList[i], pushArray);
+        }
+        this.lengthDataList = this.detailList.length;
+        this.detailListObj = this.detailList[0];
+        this.datetime = this.detailListObj.date_from;
+        this.datetime2 = this.detailListObj.date_to;
+        this.send_fromG = this.detailListObj.send_from;
+        this.editedItem = Object.assign({}, this.detailListObj);
+        this.flagEditCreate = 2;
+        console.log(this.detailListObj);
+      }
+    },
+    initialize() {
+      let id = this.propsIdJourn;
+      this.$http
+        .get(`${this.url.baseUrl}/apps/dispatching/api/detail/${id}/`)
+        .then((response) => {
+          this.detailList = response.data;
+          this.dateTrans();
+          console.log(this.detailList);
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          this.errored = true;
+        })
+        .finally(() => (this.loading = false));
+    },
+    editItemFunc(item) {
+      this.editedIndex = this.detailList.indexOf(item);
+      this.editedItem = Object.assign({}, item);
+      this.dialog = true;
+    },
+
+    deleteItem() {
+      const index = this.detailListObj.id;
+      confirm("Вы уверены что хотите удалить") &&
+        this.$http
+          .delete(
+            `${this.url.baseUrl}/apps/dispatching/api/event/delete/${index}/`,
+            {
+              headers: { Authorization: `Token ${localStorage.token}` },
+            }
+          )
+          .then((response) => {
+            if (response.status == "204") {
+              this.getEmitUpdate();
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            this.errored = true;
+          })
+          .finally(() => (this.loading = false));
+    },
+  },
+};
+</script>
+
+<style scoped>
+
+
+.textSize {
+  font-size: 5px;
+}
+.padd {
+  padding: 10px;
+}
+.editpoback {
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.hrline {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.fontSizeText {
+  font-size: 14px;
+}
+.fontheader {
+  font-size: 16px;
+  /* margin-left: 8px;
+  margin-right: 10px; */
+  color: darkcyan;
+}
+.back {
+  background-color: aliceblue;
+}
+.fixed {
+  position: fixed;
+}
+.fontsiz {
+  font-size: 16px;
+  margin-right: 8px;
+  color: black;
+}
+.custom-highlight-row {
+  background-color: pink;
+}
+.pointer {
+  cursor: pointer;
+}
+.backCard1 {
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  padding-top: 10px;
+}
+.fontsiz {
+  font-size: 16px;
+  margin-left: 10px;
+  color: black;
+}
+</style>
+ // for (let i = 0; i < this.report.length; i++) {
+      //   if (this.report[i].object != null) {
+      //     let pushArray = {
+      //       nameAll: this.report[i].object.name,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      //   if (this.report[i].circuit != null) {
+      //     let pushArray = {
+      //       nameAll: this.report[i].circuit.name,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      //   if (this.report[i].ips != null) {
+      //     let pushArray = {
+      //       nameAll: this.report[i].ips.point_id,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+
+      //   if (this.report[i].date_from != null) {
+      //     let date_from = this.report[i].date_from.substring(0, 10);
+      //     let date_from_time = this.report[i].date_from.substring(11, 16);
+      //     let pushArray = {
+      //       date_from2: date_from,
+      //       date_from_time: date_from_time,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      //   if (this.report[i].point1 != null) {
+      //     let point1 = this.report[i].point1.point;
+      //     let pushArray = {
+      //       point3: point1,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      //   if (this.report[i].point2 != null) {
+      //     let point2 = this.report[i].point2.point;
+      //     let pushArray = {
+      //       point4: point2,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      //   if (this.report[i].date_to != null) {
+      //     let date_to = this.report[i].date_to.substring(0, 10);
+      //     let date_to3 = this.report[i].date_to.substring(11, 16);
+      //     let pushArray = {
+      //       date_to2: date_to,
+      //       date_to3: date_to3,
+      //     };
+      //     Object.assign(this.report[i], pushArray);
+      //   }
+      // }
+        <!-- <v-data-table :headers="headersEvent" :items="report" class="elevation-1">
+    <template v-slot:body="{ items }">
+      <tbody>
+        <template></template>
+        <tr v-for="item in items" :key="item.type_journal">
+          <div>{{ item.type_journal }}</div>
+        </tr>
+        <tr v-for="item in items" :key="item.indexOf">
+          <div v-for="item in item.outfits" :key="item.outfit">
+            {{ item.outfit }}
+            <div v-for="item in item.events" :key="item.event">
+              <tr v-for="item in item.calls" :key="item.id">
+                <td>{{ item.name }}</td>
+                <td>{{ item.date_from }}</td>
+                <td>{{ item.date_to }}</td>
+                <td>{{ item.region }}</td>
+                <td>{{ item.index1 }}</td>
+                <td>{{ item.comments1 }}</td>
+              </tr>
+            </div>
+          </div>
+        </tr>
+      </tbody>
+    </template>
+  </v-data-table> -->

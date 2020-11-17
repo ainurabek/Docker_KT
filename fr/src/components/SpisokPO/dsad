@@ -1,0 +1,224 @@
+<template>
+  <v-container fluid class="back">
+    <v-card color="white" class="mx-auto">
+      <v-card-text>
+        <div>
+          <span class="fontsiz">Трасса:</span>
+          <span class="fontsiz" v-for="item in trassa" :key="item.indexOf"
+            >({{ item.point1 }}){{ item.name }}({{ item.point2 }})</span
+          >
+        </div>
+      </v-card-text>
+    </v-card>
+    <v-row>
+      <v-col cols="12" md="6">
+        <LP></LP>
+      </v-col>
+      <v-col cols="12" md="6">
+        <Trakt></Trakt>
+      </v-col>
+      <template v-if="type_of_trakt >= 5">
+        <v-col cols="12" md="6">
+        <CHG ></CHG>
+      </v-col>
+      </template>
+      <template v-if="type_of_trakt >= 4">
+        <v-col cols="12" md="6">
+        <TG ></TG>
+      </v-col>
+      </template>
+      <template v-if="type_of_trakt >= 3">
+        <v-col cols="12" md="6">
+        <VG ></VG>
+      </v-col>
+      </template>
+      <template v-if="type_of_trakt >= 2">
+        <v-col cols="12" md="6">
+        <PG ></PG>
+      </v-col>
+      </template>
+      
+    </v-row>
+  </v-container>
+</template>
+
+<script>
+import LP from "./LP/LP"
+import Trakt from "./Trakt/Trakt"
+import CHG from "./CHG/CHG"
+import TG from "./TG/TG"
+import VG from "./VG/VG"
+import PG from "./PG/PG"
+import { bus } from "../../main"
+
+
+export default {
+  name: "spisokpo",
+  components: { LP, Trakt, CHG, TG, VG, PG },
+  data: () => ({
+    loading: true,
+    errored: false,
+    type_of_trakt: 0,
+    trassa: [],
+  }),
+
+  mounted() {
+    bus.$on("idLPForTrakt", data => {
+      console.log(this.type_of_trakt)
+      this.type_of_trakt = data.typeOfTrakt
+    })
+    bus.$on("nullArray", data => {
+      if(data.lp_number > 6) {
+        this.type_of_trakt = 0
+      } else if(data.trakt_number > 6) {
+        this.type_of_trakt = 0
+      } 
+    })
+  },
+  beforeDestroy() {
+    bus.$off("idLPForTrakt")
+    bus.$off("nullArray")
+  },
+
+  methods: {},
+};
+</script>
+
+<style scoped>
+.back {
+  position: relative;
+  margin: 0px;
+  padding: 10px;
+  max-width: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background-color: rgb(230, 230, 230);
+}
+.fontsiz {
+  font-size: 16px;
+  margin-left: 10px;
+  color: black;
+}
+.pointer {
+  cursor: pointer;
+}
+</style>
+
+<template>
+  <v-container fluid class="back">
+    <v-card color="white" class="mx-auto">
+      <v-card-text>
+        <div>
+          <span class="fontsiz">Трасса:</span>
+          <span class="fontsiz" v-for="item in trassa" :key="item.indexOf"
+            >({{ item.point1 }}){{ item.name }}({{ item.point2 }})</span
+          >
+        </div>
+      </v-card-text>
+    </v-card>
+    <v-row>
+       <template v-if="pushId.includes(2)">
+      <v-col cols="12" md="6">
+        <LP></LP>
+      </v-col>
+      </template>
+       <template v-if="pushId.includes(3)">
+      <v-col cols="12" md="6">
+        <Trakt></Trakt>
+      </v-col>
+       </template>
+      <template v-if="pushId.includes(4)">
+        <v-col cols="12" md="6">
+        <CHG ></CHG>
+      </v-col>
+      </template>
+      <template v-if="pushId.includes(5)">
+        <v-col cols="12" md="6">
+        <TG ></TG>
+      </v-col>
+      </template>
+      <template v-if="pushId.includes(6)">
+        <v-col cols="12" md="6">
+        <VG ></VG>
+      </v-col>
+      </template>
+      <template v-if="pushId.includes(7)">
+        <v-col cols="12" md="6">
+        <PG ></PG>
+      </v-col>
+      </template>
+      
+    </v-row>
+  </v-container>
+</template>
+
+<script>
+import LP from "./LP/LP"
+import Trakt from "./Trakt/Trakt"
+import CHG from "./CHG/CHG"
+import TG from "./TG/TG"
+import VG from "./VG/VG"
+import PG from "./PG/PG"
+import { bus } from "../../main"
+
+
+export default {
+  name: "spisokpo",
+  components: { LP, Trakt, CHG, TG, VG, PG },
+  data: () => ({
+    loading: true,
+    errored: false,
+    type_of_trakt: 0,
+    idComp:{
+      lp: 1,
+      trakt: 2,
+      chg: 3,
+      tg: 4,
+      vg: 5,
+      pg: 6
+    },
+    pushId: [2,3],
+    trassa: [],
+  }),
+
+  mounted() {
+    bus.$on("watchArrIdAll" , data => {
+      let id = data
+      if (this.pushId.indexOf(id) == -1) {
+        this.pushId.push(id)
+      } else {
+        let index = this.pushId.indexOf(id)
+        this.pushId.splice(index + 1, this.pushId.length - 1)
+      }
+      console.log(this.pushId)
+    })
+  },
+  beforeDestroy() {
+    bus.$off("watchArrIdAll")
+  },
+
+  methods: {},
+};
+</script>
+
+<style scoped>
+.back {
+  position: relative;
+  margin: 0px;
+  padding: 10px;
+  max-width: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background-color: rgb(230, 230, 230);
+}
+.fontsiz {
+  font-size: 16px;
+  margin-left: 10px;
+  color: black;
+}
+.pointer {
+  cursor: pointer;
+}
+</style>
