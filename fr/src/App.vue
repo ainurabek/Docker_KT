@@ -13,6 +13,7 @@
       :src="bg"
       dark
     >
+
       <v-list dense nav class="py-0" v-if="userRole == 1">
         <v-list-item-content>
           <v-list-item-title class="mt-2 ml-2"
@@ -431,7 +432,7 @@ export default {
   },
   methods: {
     logout(e) {
-      e.preventDefault();
+    e.preventDefault();
       this.$http
         .get(`http://0.0.0.0:8000/apps/accounts/logout/`, {
           headers: { Authorization: `Token ${localStorage.token}` },
@@ -450,15 +451,15 @@ export default {
               this.$router.push("/login");
               this.pushItem()
             }
-          }
-          console.log(response.status);
+            console.log(response.status);
+            }
         })
         .catch((error) => {
           console.log(error.response.data);
           this.errored = true;
         })
         .finally(() => (this.loading = false));
-    },
+       },
     setUser() {
       let user = JSON.parse(localStorage.getItem("user"));
       if (user != undefined) {
