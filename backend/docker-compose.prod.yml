@@ -1,0 +1,38 @@
+version: '3.3'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - 8000:8000
+    depends_on:
+      - web
+    restart: "on-failure"
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=telekom
+      - POSTGRES_USER=ainura
+      - POSTGRES_PASSWORD=ainura123
+    restart: "on-failure"
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py initiate_admin &&
+      python manage.py collectstatic &&
+      python manage.py runserver &&
+      gunicorn project.wsgi:application --bind 0.0.0.0:8000"
+
+    volumes:
+      - .:/code
+    expose:
+      - 8000
+    depends_on:
+      - db
+    restart: "on-failure"
+
+volumes:
+  postgres_data:
