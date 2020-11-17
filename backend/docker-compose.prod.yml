@@ -10,6 +10,8 @@ services:
     restart: "on-failure"
   db:
     image: postgres
+    volumes:
+      - dm_postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=telekom
       - POSTGRES_USER=ainura
